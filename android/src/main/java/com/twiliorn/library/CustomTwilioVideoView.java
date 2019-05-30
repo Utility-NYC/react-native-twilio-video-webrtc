@@ -229,7 +229,33 @@ public class CustomTwilioVideoView extends View implements LifecycleEventListene
 
     @Override
     public void onHostResume() {
-      Log.i("CustomTwilioVideoView", "Host resume does nothing!!");
+        /*
+            * In case it wasn't set.
+            */
+        if (themedReactContext.getCurrentActivity() != null) {
+            /*
+            * If the local video track was released when the app was put in the background, recreate.
+            */
+            if (cameraCapturer != null && localVideoTrack == null) {
+                localVideoTrack = LocalVideoTrack.create(getContext(), true, cameraCapturer, buildVideoConstraints());
+            }
+
+            if (localVideoTrack != null) {
+                if (thumbnailVideoView != null) {
+                    localVideoTrack.addRenderer(thumbnailVideoView);
+                }
+
+                /*
+                * If connected to a Room then share the local video track.
+                */
+                if (localParticipant != null) {
+                    localParticipant.publishTrack(localVideoTrack);
+                }
+            }
+
+            themedReactContext.getCurrentActivity().setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
+
+        }
     }
 
     @Override
